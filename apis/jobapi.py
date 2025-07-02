@@ -6,7 +6,7 @@ def get_headers():
     auth_key = os.environ.get('USAJOB_AUTH_KEY')
     user_agent = os.environ.get('USAJOB_USER_AGENT')
 
-    if not auth_key or not auth_key:
+    if not auth_key or not user-agent:
         raise ValueError("missing auth-key or user-agent")
 
     return{
@@ -26,7 +26,8 @@ def fetch_jobs(headers, params):
     response = requests.get(url, headers=headers, params=params)
     if response.status_code != 200:
         raise Exception("failed to fetch data {response.status_code}")
-    return response.json()
+    data = response.json()
+    return parse_jobs(data)
 
 def parse_jobs(data):
         results = []
@@ -40,11 +41,3 @@ def parse_jobs(data):
           })
         return results
 
-
-def print_jobs(jobs):
-    for job in jobs:
-        print(f"Title: {job['title']}")
-        print(f"Agency: {job['agency']}")
-        print(f"Location: {job['location']}")
-        print(f"URL: {job['url']}")
-        print(f"Summary: {job['summary']}")
