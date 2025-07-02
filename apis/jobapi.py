@@ -48,14 +48,3 @@ def print_jobs(jobs):
         print(f"Location: {job['location']}")
         print(f"URL: {job['url']}")
         print(f"Summary: {job['summary']}")
-
-
-def main():
-    headers = get_headers()
-    params = build_params(keyword="engineer", job_abundance=100)
-    data = fetch_jobs(headers,params)
-    jobs = parse_jobs(data)
-    print_jobs(jobs)
-
-if __name__ == "__main__":
-    main()
