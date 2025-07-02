@@ -2,12 +2,18 @@ import requests
 import textrazor
 import os
 
-my_api_key = os.getenv('TEXTRAZOR_KEY')
-textrazor.api_key = my_api_key
+textrazor.api_key = os.environ.get('TEXTRAZOR_SECRET_API_ID')
 
+user_input = input("Enter Your Resume: ")
 client = textrazor.TextRazor(extractors=["entities", "topics"])
-response = client.analyze_url("http://www.bbc.co.uk/news/uk-politics-18640916")
 
-# for entity in response.entities():
-#     print(entity.id, entity.relevance_score, entity.confidence_score, entity.freebase_types)
-print(response)
+response = client.analyze(user_input)
+
+print("\nEntities")
+for entity in response.entities():
+    print(f"- {entity.id} (Relevance: {entity.relevance_score} , Confidence: {entity.confidence_score})")
+
+print("\nTopic")
+for topic in response.topics():
+    print(f"- {topic.label} (Score: {topic.score})")   
+
