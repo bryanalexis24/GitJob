@@ -1,10 +1,19 @@
-import requests
 import textrazor
 import os
 
 textrazor.api_key = os.environ.get('TEXTRAZOR_SECRET_API_ID')
 
-user_input = input("Enter Your Resume: ")
+print("Enter Your Resume Below. Press ENTER Twice To Finish: \n")
+
+# Multi line support
+lines = []
+while True:
+    line = input()
+    if line.strip() == "":
+        break
+    lines.append(line)
+
+user_input = "\n".join(lines)
 client = textrazor.TextRazor(extractors=["entities", "topics"])
 
 response = client.analyze(user_input)
