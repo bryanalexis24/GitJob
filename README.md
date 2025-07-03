@@ -65,6 +65,7 @@ Installation
 
 2. Install dependencies:
        pip install -r requirements.txt
+       pip install sqlalchemy
 
 3. Set your API keys (replace with your actual keys):
        export USAJOB_AUTH_KEY="your_usajobs_api_key"
