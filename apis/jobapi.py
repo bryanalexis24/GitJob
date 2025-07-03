@@ -6,8 +6,10 @@ def get_headers():
     auth_key = os.environ.get('USAJOB_AUTH_KEY')
     user_agent = os.environ.get('USAJOB_USER_AGENT')
 
-    if not auth_key or not user-agent:
-        raise ValueError("missing auth-key or user-agent")
+    if not auth_key:
+        raise ValueError("missing auth-key")
+    elif not user_agent:
+        raise ValueError("missing user-agent")
 
     return{
         "User-Agent": user_agent,
@@ -25,7 +27,7 @@ def fetch_jobs(headers, params):
     url = "https://data.usajobs.gov/api/search"
     response = requests.get(url, headers=headers, params=params)
     if response.status_code != 200:
-        raise Exception("failed to fetch data {response.status_code}")
+        raise Exception(f"failed to fetch data {response.status_code}")
     data = response.json()
     return parse_jobs(data)
 
@@ -34,7 +36,7 @@ def parse_jobs(data):
         for job in data.get("SearchResult", {}).get("SearchResultItems", []):
           descriptor = job['MatchedObjectDescriptor']
           results.append({"title": descriptor.get('PositionTitle'),
-          "agency": descriptor.get('OrganizationName'),
+          "company": descriptor.get('OrganizationName'),
           "location": descriptor.get('PositionLocationDisplay'),
           "url": descriptor.get('PositionURI'),
           "summary": descriptor.get('UserArea', {}).get('Details', {}).get('JobSummary')

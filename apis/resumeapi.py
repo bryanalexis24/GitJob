@@ -3,8 +3,6 @@ import os
 
 textrazor.api_key = os.environ.get('TEXTRAZOR_SECRET_API_ID')
 
-# Need extracted job postings for comparison
-
 """
 Prompts the user to pase their resume with multi line support
 Returns the joined text
@@ -24,18 +22,17 @@ def getResume():
         resume_text = "\n".join(lines)
         if not resume_text:
             print("Please enter your resume\n")
-    return user_input
+    return resume_text
 
 """
 Analyzes the resume text and extracts relevant topics and skills using TextRazor
 """
 def extractKeywords(text):
     client = textrazor.TextRazor(extractors=["entities", "topics"])
-    response = client.analyze(user_input)
+    response = client.analyze(text)
     keywords = set()
-    print("\nJob Titles")
     for entity in response.entities():
-        if entity.id and entity.confidence_score >= 0.9:
+        if entity.id and entity.confidence_score >= 0.5:
             keywords.add(entity.id.lower())
     return keywords
 
@@ -43,11 +40,11 @@ def extractKeywords(text):
 Calculates score using overlap from TextRazor
 Takes two arguments, the extracted keywords and the job desc skills
 """
-def calculateScore(resume_keywords, job_description):
-    if not resume_keywords:
-        return []
-    overlap = resume_keywords & job_description
-    score = len(overlap) / len(job_description) * 100
+def calculateScore(resume_keywords, job_keywords):
+    if not resume_keywords or not job_keywords:
+        return 0, []
+    overlap = resume_keywords & job_keywords
+    score = len(overlap) / len(job_keywords) * 100
     return round(score, 2), list(overlap)
 
 """
@@ -66,20 +63,32 @@ Finds the top 5 matches for resume
 """
 def topFiveMatches(resume_text, jobs):
     resume_keywords = extractKeywords(resume_text) 
-    jobs_matches = []
+    print("Resume Keywords:", resume_keywords)
+    job_matches = []
     for job in jobs[:10]:
-        job_data = job["MatchedObjectDescriptor"]
-        job_desc = job_data["UserArea"]["Details"]["JobSummary"]
+        job_desc = job["summary"]
         job_keywords = extractKeywords(job_desc)
+        print("Job Keywords:", job_keywords)
         score, matched = calculateScore(resume_keywords, job_keywords)
         job_matches.append({
-            "title": job_data["PositionTitle"],
-            "company": job_data["OrganizationName"],
-            "url": job_data["PositionURI"],
+            "title": job["title"],
+            "company": job["company"],
+            "url": job["url"],
+            "description": job_desc,
             "score": score,
-            "tier": get_fit_tier(score),
+            "tier": tierList(score),
             "matched_skills": matched
         })
-    job_matches.sort(key=lambda job: job["score"], reverse=True) # Sort for top 5
+    job_matches.sort(key=lambda job: job["score"], reverse=True)
     top_matches = job_matches[:5]
     return top_matches
+
+
+
+
+
+
+
+
+
+    
