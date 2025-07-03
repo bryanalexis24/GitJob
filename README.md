@@ -117,6 +117,3 @@ Future Improvements
 - Support for uploading .pdf or .docx resume files
 - Add a basic GUI using Flask or Tkinter
 - Include job search history and bookmarking features
-
-
-
