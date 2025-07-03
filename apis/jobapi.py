@@ -1,50 +1,25 @@
 import requests
 import os
 
-
-def get_headers():
-    auth_key = os.environ.get('USAJOB_AUTH_KEY')
-    user_agent = os.environ.get('USAJOB_USER_AGENT')
-
-    if not auth_key or not auth_key:
-        raise ValueError("missing auth-key or user-agent")
-
-    return{
-        "User-Agent": user_agent,
-        "Authorization-Key": auth_key
-    }
-    
-
-def build_params(keyword="engineer", job_abundance=1):
-    return {
-    "Keyword": keyword,
-    "ResultsPerPage": job_abundance
-    }
-
-def fetch_jobs(headers, params):
-    url = "https://data.usajobs.gov/api/search"
-    response = requests.get(url, headers=headers, params=params)
+def fetch_jobs(keyword=""):
+    token = os.getenv("FINDWORK_TOKEN")
+    if not token:
+        raise Exception("Missing token")
+    headers = {"Authorization": f"Token {token}"}
+    params = {"search": keyword}
+    response = requests.get("https://findwork.dev/api/jobs/", headers=headers, params=params)
     if response.status_code != 200:
-        raise Exception("failed to fetch data {response.status_code}")
-    return response.json()
-
-def parse_jobs(data):
-        results = []
-        for job in data.get("SearchResult", {}).get("SearchResultItems", []):
-          descriptor = job['MatchedObjectDescriptor']
-          results.append({"title": descriptor.get('PositionTitle'),
-          "agency": descriptor.get('OrganizationName'),
-          "location": descriptor.get('PositionLocationDisplay'),
-          "url": descriptor.get('PositionURI'),
-          "summary": descriptor.get('UserArea', {}).get('Details', {}).get('JobSummary')
-          })
-        return results
-
-
-def print_jobs(jobs):
+        raise Exception(f"Failed to fetch jobs: {response.status_code}")
+    jobs = response.json().get("results", [])
+    parsed_jobs = []
     for job in jobs:
-        print(f"Title: {job['title']}")
-        print(f"Agency: {job['agency']}")
-        print(f"Location: {job['location']}")
-        print(f"URL: {job['url']}")
-        print(f"Summary: {job['summary']}")
+        desc = job.get("description") or job.get("text") or job.get("summary") or ""
+        if not desc.strip():
+            continue
+        parsed_jobs.append({
+            "title": job.get("title") or job.get("role") or "Untitled Position",
+            "company": job.get("company_name", "Unknown Company"),
+            "url": job.get("url", ""),
+            "description": desc
+        })
+    return parsed_jobs
