@@ -1,5 +1,5 @@
 from apis.resumeapi import getResume, calculateScore, tierList, extractKeywords, topFiveMatches
-from apis.jobapi import fetch_jobs, build_params, get_headers
+from apis.jobapi import fetch_jobs
 from apis.genai import feedback
 
 def main():
@@ -7,9 +7,7 @@ def main():
     if not resume_text:
         print("Resume can't be empty")
         return
-    headers = get_headers()
-    params = build_params("software engineer", 10)
-    jobs = fetch_jobs(headers, params)
+    jobs = fetch_jobs("")
     if not jobs:
         print("No jobs found")
         return

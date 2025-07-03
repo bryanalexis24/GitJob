@@ -32,7 +32,7 @@ def extractKeywords(text):
     response = client.analyze(text)
     keywords = set()
     for entity in response.entities():
-        if entity.id and entity.confidence_score >= 0.5:
+        if entity.id and entity.confidence_score >= 0.2:
             keywords.add(entity.id.lower())
     return keywords
 
@@ -44,16 +44,17 @@ def calculateScore(resume_keywords, job_keywords):
     if not resume_keywords or not job_keywords:
         return 0, []
     overlap = resume_keywords & job_keywords
-    score = len(overlap) / len(job_keywords) * 100
-    return round(score, 2), list(overlap)
+    base_score = len(overlap) / len(job_keywords) * 100
+    inflated_score = min(base_score + 50, 100)
+    return round(inflated_score, 2), list(overlap)
 
 """
 Assigns matches in tier list rankings based on score
 """
 def tierList(score):
-    if score >= 95:
+    if score >= 80:
         return "👑 Tier 1 (Excellent Match)"
-    elif score >= 90 and score < 95:
+    elif score >= 55 and score < 80:
         return "🤷🏽 Tier 2 (Strong Match)"
     else:
         return "🤨 Tier 3 (Weak Match)"
@@ -62,13 +63,11 @@ def tierList(score):
 Finds the top 5 matches for resume
 """
 def topFiveMatches(resume_text, jobs):
-    resume_keywords = extractKeywords(resume_text) 
-    print("Resume Keywords:", resume_keywords)
+    resume_keywords = extractKeywords(resume_text)
     job_matches = []
     for job in jobs[:10]:
-        job_desc = job["summary"]
+        job_desc = job["description"]
         job_keywords = extractKeywords(job_desc)
-        print("Job Keywords:", job_keywords)
         score, matched = calculateScore(resume_keywords, job_keywords)
         job_matches.append({
             "title": job["title"],
@@ -82,13 +81,3 @@ def topFiveMatches(resume_text, jobs):
     job_matches.sort(key=lambda job: job["score"], reverse=True)
     top_matches = job_matches[:5]
     return top_matches
-
-
-
-
-
-
-
-
-
-    
